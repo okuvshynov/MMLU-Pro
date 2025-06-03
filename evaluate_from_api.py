@@ -15,7 +15,7 @@ from ai21 import AI21Client
 from ai21.models.chat import ChatMessage, ResponseFormat, DocumentSchema, FunctionToolDefinition
 from ai21.models.chat import ToolDefinition, ToolParameters
 
-API_KEY = ""
+API_KEY = "nokey"
 random.seed(12345)
 
 def get_client():
@@ -24,6 +24,8 @@ def get_client():
         client = openai
     elif args.model_name in ["deepseek-chat", "deepseek-coder"]:
         client = OpenAI(api_key=API_KEY, base_url="https://api.deepseek.com/")
+    elif args.model_name in ["local_llamacpp"]:
+        client = OpenAI(api_key=API_KEY, base_url="http://127.0.0.1:8080/v1")
     elif args.model_name in ["gemini-1.5-flash-latest", "gemini-1.5-pro-latest",
                              "gemini-1.5-flash-8b", "gemini-002-pro", "gemini-002-flash"]:
         genai.configure(api_key=API_KEY)
@@ -72,7 +74,14 @@ def get_client():
 
 def call_api(client, instruction, inputs):
     start = time.time()
-    if args.model_name in ["gpt-4", "gpt-4o", "deepseek-chat", "deepseek-coder"]:
+    if args.model_name in ["local_llamacpp"]:
+        message_text = [{"role": "user", "content": instruction + inputs}]
+        completion = client.chat.completions.create(
+          model=args.model_name,
+          messages=message_text
+        )
+        result = completion.choices[0].message.content
+    elif args.model_name in ["gpt-4", "gpt-4o", "deepseek-chat", "deepseek-coder"]:
         message_text = [{"role": "user", "content": instruction + inputs}]
         completion = client.chat.completions.create(
           model=args.model_name,
@@ -361,7 +370,7 @@ if __name__ == "__main__":
                                  "gemini-1.5-flash-8b",
                                  "claude-3-sonnet-20240229",
                                  "gemini-002-pro",
-                                 "gemini-002-flash"])
+                                 "gemini-002-flash", "local_llamacpp"])
     parser.add_argument("--assigned_subjects", "-a", type=str, default="all")
     assigned_subjects = []
     args = parser.parse_args()
