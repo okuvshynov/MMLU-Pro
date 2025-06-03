@@ -1,5 +1,18 @@
 # MMLU-Pro
 
+## This is a fork!
+
+qwen 3:
+```
+(base) studio ~ % curl http://127.0.0.1:8080/tokenize -H "Content-Type: application/json" -d '{"content": "</think>"}'
+{"tokens":[151668]}%
+(base) studio ~ % curl http://127.0.0.1:8080/detokenize -H "Content-Type: application/json" -d '{"tokens": [151668]}'
+{"content":"</think>"}%
+```
+
+
+
+
 |[**🤗 Dataset**](https://huggingface.co/datasets/TIGER-Lab/MMLU-Pro) | [**🏆Leaderboard**](https://huggingface.co/spaces/TIGER-Lab/MMLU-Pro) | [**📖 Paper**](https://arxiv.org/abs/2406.01574) |
 
 This repo contains the evaluation code for the NeurIPS-24 paper "[MMLU-Pro: A More Robust and Challenging Multi-Task Language Understanding Benchmark](https://arxiv.org/abs/2406.01574.pdf)"
