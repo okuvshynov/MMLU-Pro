@@ -78,7 +78,9 @@ def call_api(client, instruction, inputs):
         message_text = [{"role": "user", "content": instruction + inputs}]
         completion = client.chat.completions.create(
           model=args.model_name,
-          messages=message_text
+          messages=message_text,
+          #logit_bias=[[151668, 20.0]],
+          logit_bias=[[args.logit_bias_token, args.logit_bias]],
         )
         result = completion.choices[0].message.content
     elif args.model_name in ["gpt-4", "gpt-4o", "deepseek-chat", "deepseek-coder"]:
@@ -372,6 +374,8 @@ if __name__ == "__main__":
                                  "gemini-002-pro",
                                  "gemini-002-flash", "local_llamacpp"])
     parser.add_argument("--assigned_subjects", "-a", type=str, default="all")
+    parser.add_argument("--logit_bias_token", "-lbt", type=int, default=-1)
+    parser.add_argument("--logit_bias", "-lb", type=float, default=0.0)
     assigned_subjects = []
     args = parser.parse_args()
 
