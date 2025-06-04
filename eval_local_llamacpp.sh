@@ -8,3 +8,5 @@ python evaluate_from_api.py         \
      --assigned_subjects psychology \
      --logit_bias_token 151668      \
      --logit_bias $bias             
+
+jq 'map(.model_outputs |= length | del(.options, .question))' eval_results/Qwen3-30B-A3B-UD-Q6_K_XL_think_bias_$bias/psychology_result.json > eval_results/Qwen3-30B-A3B-UD-Q6_K_XL_think_bias_$bias/psychology_result_lengths.json
