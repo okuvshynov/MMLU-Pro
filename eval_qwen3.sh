@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# qwen3-specific </think> token id == 151668
+
 bias=$1
 
 python evaluate_from_api.py         \
