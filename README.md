@@ -2,6 +2,9 @@
 
 ## This is a fork!
 
+Next:
+Pick a few subjects (math, cs, psychology, law) and run 0, 16..20 ?
+
 qwen 3:
 ```
 (base) studio ~ % curl http://127.0.0.1:8080/tokenize -H "Content-Type: application/json" -d '{"content": "</think>"}'
