@@ -4,12 +4,16 @@ This is a fork for the experiment. Check original [MMLU repo](https://github.com
 
 ## Experiment setup
 
-This is an experimental fork to understand the inference-time tradeoff between thinking time and quality for LLM models with thinking like Qwen3.
+This is an experimental fork to understand the inference-time tradeoff between thinking time and quality for LLM models like Qwen3.
 
 Intuition: rather than disabling thinking with ```/nothink``` or somehow tuning model, we can manually adjust the logit value for ```</think>```.
-This way, we'll nudge model to stop 'thinking' and produce the final, user-visible output, without hardcoding the limit/budget and still allow to think when it's really worth it.
+This way, we'll nudge model to stop 'thinking' and produce the final, user-visible output, without hardcoding the limit/budget and still allow to think when it's worth it.
 
 Tweaking the value of this bias, we can achieve different tradeoffs between thinking time and quality.
+
+TL;DR - it is very rare that we end up thinking 'a little less'. Instead, tweaking logit bias results in either same amount of thinking as in control version or no thinking at all.
+Different values for logit bias result in getting immediate `</think>` for more questions.
+
 
 Setup:
 * Use [MMLU-Pro benchmark](https://github.com/TIGER-AI-Lab/MMLU-Pro). As of Jun 6, only psychology section is complete 
@@ -29,9 +33,12 @@ Limitations:
 
 ## Results
 
+
+
+
 Focusing on logit_bias=18 and comparing it to logit_bias=0, we can check the distribution of output length.
 
-As we are applying the bias and not hardcoding the length, we are not 'uniformly thinking less'. In > 50% of cases model thinking time stays the same, and in other cases it is reduced a lot, as we can see in the distribution of think time (each data point is a sample in MMLU pro psychology dataset)
+As we are applying the bias and not hardcoding the length, we are not 'uniformly thinking less'. It's very unlikely to inject '</think>' in the middle of sentence. In > 50% of cases model thinking time stays the same, and in other cases it is reduced a lot, as we can see in the distribution of think time (each data point is a sample in MMLU pro psychology dataset)
 
 ![distribuiton of thinking tokens count](eval_results/pics/qwen3_psychology_think_diff.png)
 
