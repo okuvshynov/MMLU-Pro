@@ -16,10 +16,10 @@ def analyze_eval_results():
             continue
             
         # Extract bias number from directory name
-        bias_match = re.search(r'_bias_(\d+)$', dir_path.name)
+        bias_match = re.search(r'_bias_(\d+(?:\.\d+)?)$', dir_path.name)
         if not bias_match:
             continue
-        bias_number = int(bias_match.group(1))
+        bias_number = float(bias_match.group(1))
         
         # Find all *_result.json files in this directory
         for json_file in dir_path.glob("*_result.json"):
