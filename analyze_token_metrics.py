@@ -89,7 +89,7 @@ def main():
     # Write CSV output
     with open(output_file, 'w', newline='') as csvfile:
         fieldnames = ['question_id', 'length_total', 'length_think', 'n_tokens_total', 
-                      'n_tokens_think', 'think_ratio_length', 'think_ratio_tokens']
+                      'n_tokens_think']
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
         writer.writeheader()
         writer.writerows(results)
