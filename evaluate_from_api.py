@@ -21,7 +21,7 @@ random.seed(12345)
 def get_client():
     if args.model_name in ["gpt-4", "gpt-4o", "o1-preview"]:
         openai.api_key = API_KEY
-        client = openai
+        client = openai(timeout=300)
     elif args.model_name in ["deepseek-chat", "deepseek-coder"]:
         client = OpenAI(api_key=API_KEY, base_url="https://api.deepseek.com/")
     elif args.model_name in ["local_llamacpp"]:
@@ -79,7 +79,6 @@ def call_api(client, instruction, inputs):
         completion = client.chat.completions.create(
           model=args.model_name,
           messages=message_text,
-          #logit_bias=[[151668, 20.0]],
           logit_bias=[[args.logit_bias_token, args.logit_bias]],
         )
         result = completion.choices[0].message.content

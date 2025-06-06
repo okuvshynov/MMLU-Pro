@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 import json
 import re
+import sys
 from pathlib import Path
 from statistics import mean
 
-def analyze_eval_results():
+def analyze_eval_results(n_res=None):
     """Analyze eval_results JSON files and extract requested metrics."""
     eval_results_dir = Path("/Users/oleksandr/projects/MMLU-Pro/eval_results")
     
@@ -33,6 +34,8 @@ def analyze_eval_results():
             try:
                 with open(json_file, 'r') as f:
                     data = json.load(f)
+                if n_res is not None:
+                    data = data[:n_res]
                 
                 # Count matches where answer == pred
                 match_count = 0
@@ -70,4 +73,5 @@ def analyze_eval_results():
         print(f"{result['end_think_bias']}, {result['category']}, {result['correct']}, {result['total']}, {result['pass_rate']:.4f}, {result['avg_output_len']:.2f}")
 
 if __name__ == "__main__":
-    analyze_eval_results()
+    n_res = int(sys.argv[1]) if len(sys.argv) > 1 else None
+    analyze_eval_results(n_res)
