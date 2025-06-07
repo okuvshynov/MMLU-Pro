@@ -75,10 +75,11 @@ def get_client():
 def call_api(client, instruction, inputs):
     start = time.time()
     if args.model_name in ["local_llamacpp"]:
-        message_text = [{"role": "user", "content": instruction + inputs}]
+        message_text = [{"role": "user", "content": instruction + inputs + ' /no_think'}]
         completion = client.chat.completions.create(
           model=args.model_name,
           messages=message_text,
+          max_tokens=8000,
           logit_bias=[[args.logit_bias_token, args.logit_bias]],
         )
         result = completion.choices[0].message.content
