@@ -1,0 +1,59 @@
+{
+  "summary": {
+    "total_questions": 410,
+    "patterns": {
+      "both_correct": 300,
+      "both_wrong": 61,
+      "nothink_only": 18,
+      "think_only": 31
+    },
+    "accuracies": {
+      "nothink": 0.775609756097561,
+      "think": 0.8073170731707318
+    },
+    "bias_patterns": {
+      "bias19_unique": 2,
+      "bias20_unique": 3,
+      "bias19_only_vs_think": 7,
+      "bias20_only_vs_think": 13
+    }
+  },
+  "question_ids": {
+    "nothink_only_correct": [
+      10385,
+      10427,
+      10468,
+      10483,
+      10565,
+      10579,
+      10608,
+      10610,
+      10618,
+      10637
+    ],
+    "think_only_correct": [
+      10360,
+      10361,
+      10403,
+      10451,
+      10464,
+      10478,
+      10495,
+      10516,
+      10546,
+      10552
+    ],
+    "both_wrong": [
+      10358,
+      10359,
+      10365,
+      10390,
+      10391,
+      10397,
+      10399,
+      10402,
+      10412,
+      10418
+    ]
+  }
+}

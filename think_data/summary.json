@@ -1,0 +1,15 @@
+{
+  "cs_nothink_correct": 318,
+  "cs_nothink_n_tokens": 123491,
+  "cs_think_correct": 331,
+  "cs_think_n_tokens": 550603,
+  "cs_think_bias_19_correct": 334,
+  "cs_think_bias_19_n_tokens": 448547,
+  "cs_think_bias_20_correct": 318,
+  "cs_think_bias_20_n_tokens": 137537,
+  "total_questions": 410,
+  "cs_nothink_accuracy": 0.775609756097561,
+  "cs_think_accuracy": 0.8073170731707318,
+  "cs_think_bias_19_accuracy": 0.8146341463414634,
+  "cs_think_bias_20_accuracy": 0.775609756097561
+}

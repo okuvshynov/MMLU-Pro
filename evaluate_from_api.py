@@ -75,7 +75,7 @@ def get_client():
 def call_api(client, instruction, inputs):
     start = time.time()
     if args.model_name in ["local_llamacpp"]:
-        message_text = [{"role": "user", "content": instruction + inputs + ' /no_think'}]
+        message_text = [{"role": "user", "content": instruction + inputs}]
         completion = client.chat.completions.create(
           model=args.model_name,
           messages=message_text,
