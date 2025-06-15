@@ -12,10 +12,12 @@
       "think": 0.8073170731707318
     },
     "bias_patterns": {
-      "bias19_unique": 2,
-      "bias20_unique": 3,
-      "bias19_only_vs_think": 7,
-      "bias20_only_vs_think": 13
+      "cs_think_bias_19_unique": 2,
+      "cs_think_bias_19_only_vs_think": 7,
+      "cs_think_bias_19_5_unique": 3,
+      "cs_think_bias_19_5_only_vs_think": 9,
+      "cs_think_bias_20_unique": 3,
+      "cs_think_bias_20_only_vs_think": 13
     }
   },
   "question_ids": {

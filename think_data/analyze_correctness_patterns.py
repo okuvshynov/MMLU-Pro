@@ -35,16 +35,19 @@ def analyze_correctness_patterns(data: List[Dict[str, Any]]):
     }
     
     # Analyze bias patterns if available
-    bias_patterns = {
-        'bias19_unique': 0,  # bias19 correct when both nothink and think are wrong
-        'bias20_unique': 0,  # bias20 correct when both nothink and think are wrong
-        'bias19_only_vs_think': 0,  # bias19 correct, think wrong
-        'bias20_only_vs_think': 0,  # bias20 correct, think wrong
-    }
+    bias_patterns = {}
+    bias_columns = []
     
-    # Check if bias columns exist
-    has_bias19 = 'cs_think_bias_19_correct' in data[0] if data else False
-    has_bias20 = 'cs_think_bias_20_correct' in data[0] if data else False
+    # Detect all bias columns dynamically
+    if data:
+        all_columns = list(data[0].keys())
+        for col in all_columns:
+            if col.startswith('cs_think_bias_') and col.endswith('_correct'):
+                bias_name = col.replace('_correct', '')
+                bias_columns.append(bias_name)
+                # Initialize patterns for this bias model
+                bias_patterns[f'{bias_name}_unique'] = 0  # correct when both nothink and think are wrong
+                bias_patterns[f'{bias_name}_only_vs_think'] = 0  # correct, think wrong
     
     for row in data:
         question_id = row['question_id']
@@ -60,10 +63,9 @@ def analyze_correctness_patterns(data: List[Dict[str, Any]]):
             pattern_questions['both_wrong'].append(question_id)
             
             # Check if bias versions got it right
-            if has_bias19 and row.get('cs_think_bias_19_correct', 0):
-                bias_patterns['bias19_unique'] += 1
-            if has_bias20 and row.get('cs_think_bias_20_correct', 0):
-                bias_patterns['bias20_unique'] += 1
+            for bias_name in bias_columns:
+                if row.get(f'{bias_name}_correct', 0):
+                    bias_patterns[f'{bias_name}_unique'] += 1
                 
         elif nothink_correct and not think_correct:
             patterns['nothink_only'] += 1
@@ -73,15 +75,10 @@ def analyze_correctness_patterns(data: List[Dict[str, Any]]):
             pattern_questions['think_only'].append(question_id)
         
         # Check bias vs think patterns
-        if has_bias19:
-            bias19_correct = row.get('cs_think_bias_19_correct', 0)
-            if bias19_correct and not think_correct:
-                bias_patterns['bias19_only_vs_think'] += 1
-                
-        if has_bias20:
-            bias20_correct = row.get('cs_think_bias_20_correct', 0)
-            if bias20_correct and not think_correct:
-                bias_patterns['bias20_only_vs_think'] += 1
+        for bias_name in bias_columns:
+            bias_correct = row.get(f'{bias_name}_correct', 0)
+            if bias_correct and not think_correct:
+                bias_patterns[f'{bias_name}_only_vs_think'] += 1
     
     # Calculate totals
     total = len(data)
@@ -109,20 +106,16 @@ def analyze_correctness_patterns(data: List[Dict[str, Any]]):
     print(f"  Think:               {think_total:4d} ({think_total/total*100:5.1f}%)")
     print(f"  Accuracy difference: {(think_total - nothink_total)/total*100:+5.1f}% (Think vs NoThink)")
     
-    if has_bias19 or has_bias20:
+    if bias_columns:
         print()
         print("Bias Model Analysis:")
-        if has_bias19:
-            bias19_total = sum(row.get('cs_think_bias_19_correct', 0) for row in data)
-            print(f"  Bias19 total correct: {bias19_total:4d} ({bias19_total/total*100:5.1f}%)")
-            print(f"    Unique wins (when both fail): {bias_patterns['bias19_unique']:4d}")
-            print(f"    Better than Think:            {bias_patterns['bias19_only_vs_think']:4d}")
-            
-        if has_bias20:
-            bias20_total = sum(row.get('cs_think_bias_20_correct', 0) for row in data)
-            print(f"  Bias20 total correct: {bias20_total:4d} ({bias20_total/total*100:5.1f}%)")
-            print(f"    Unique wins (when both fail): {bias_patterns['bias20_unique']:4d}")
-            print(f"    Better than Think:            {bias_patterns['bias20_only_vs_think']:4d}")
+        for bias_name in sorted(bias_columns):
+            bias_total = sum(row.get(f'{bias_name}_correct', 0) for row in data)
+            # Extract the bias value from the name (e.g., "cs_think_bias_19" -> "19")
+            bias_value = bias_name.split('_')[-1]
+            print(f"  Bias{bias_value} total correct: {bias_total:4d} ({bias_total/total*100:5.1f}%)")
+            print(f"    Unique wins (when both fail): {bias_patterns[f'{bias_name}_unique']:4d}")
+            print(f"    Better than Think:            {bias_patterns[f'{bias_name}_only_vs_think']:4d}")
     
     # Save detailed results
     output_file = 'correctness_patterns.json'
@@ -135,7 +128,7 @@ def analyze_correctness_patterns(data: List[Dict[str, Any]]):
                     'nothink': nothink_total / total if total > 0 else 0,
                     'think': think_total / total if total > 0 else 0,
                 },
-                'bias_patterns': bias_patterns if (has_bias19 or has_bias20) else {}
+                'bias_patterns': bias_patterns if bias_columns else {}
             },
             'question_ids': {
                 'nothink_only_correct': pattern_questions['nothink_only'][:10],  # First 10 examples

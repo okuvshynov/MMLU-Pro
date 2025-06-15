@@ -69,16 +69,29 @@ def create_scatter_plot(combined_file: str, simulation_pattern: str = "simulatio
     markers = {
         'cs_nothink': 'o',
         'cs_think': 's',
-        'cs_think_bias_19': '.',
-        'cs_think_bias_20': '.',
         'simulation': '.'
     }
+    
+    # Default marker for cs_think_bias_* files
+    default_bias_marker = '.'
     
     # Create figure
     fig, ax = plt.subplots(figsize=(12, 8))
     
     # Plot real datasets
-    datasets = ['cs_nothink', 'cs_think', 'cs_think_bias_19', 'cs_think_bias_20']
+    # First get all column prefixes from the data
+    if data:
+        all_columns = list(data[0].keys())
+        dataset_prefixes = set()
+        for col in all_columns:
+            if col.endswith('_correct'):
+                prefix = col.replace('_correct', '')
+                dataset_prefixes.add(prefix)
+        
+        # Sort to ensure consistent order
+        datasets = sorted(list(dataset_prefixes))
+    else:
+        datasets = []
     
     for dataset in datasets:
         try:
@@ -91,7 +104,10 @@ def create_scatter_plot(combined_file: str, simulation_pattern: str = "simulatio
                 color = colors.get(dataset, 'gray')
             
             # Determine marker
-            marker = markers.get(dataset, 'o')
+            if 'cs_think_bias' in dataset:
+                marker = default_bias_marker
+            else:
+                marker = markers.get(dataset, 'o')
             
             # Determine size based on dataset type
             if 'bias' in dataset:

@@ -139,12 +139,15 @@ def main():
     args = parser.parse_args()
     
     # List of JSON files to combine
-    json_files = [
-        'cs_nothink.json',
-        'cs_think.json',
-        'cs_think_bias_19.json',
-        'cs_think_bias_20.json'
-    ]
+    json_files = ['cs_nothink.json', 'cs_think.json']
+    
+    # Find all cs_think_bias_*.json files
+    bias_files = sorted(Path('.').glob('cs_think_bias_*.json'))
+    json_files.extend([str(f) for f in bias_files])
+    
+    print(f"Found {len(json_files)} files to combine:")
+    for f in json_files:
+        print(f"  - {f}")
     
     combine_datasets(json_files, args.output, args.tokenize_url)
 

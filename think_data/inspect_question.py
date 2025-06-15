@@ -106,11 +106,23 @@ def main():
     parser.add_argument('--no-output', action='store_true', 
                         help='Hide model outputs for brevity')
     parser.add_argument('--files', nargs='+', 
-                        default=['cs_nothink.json', 'cs_think.json', 
-                                'cs_think_bias_19.json', 'cs_think_bias_20.json'],
-                        help='JSON files to inspect (default: all 4 files)')
+                        default=None,
+                        help='JSON files to inspect (default: auto-detect all available files)')
     
     args = parser.parse_args()
+    
+    # Auto-detect files if not specified
+    if args.files is None:
+        json_files = ['cs_nothink.json', 'cs_think.json']
+        
+        # Find all cs_think_bias_*.json files
+        bias_files = sorted(Path('.').glob('cs_think_bias_*.json'))
+        json_files.extend([str(f) for f in bias_files])
+        
+        args.files = json_files
+        print(f"\nAuto-detected {len(args.files)} JSON files:")
+        for f in args.files:
+            print(f"  - {f}")
     
     print(f"\nSearching for Question ID: {args.question_id}")
     
