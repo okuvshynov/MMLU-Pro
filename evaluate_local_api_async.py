@@ -9,10 +9,30 @@ import argparse
 import asyncio
 import aiohttp
 from typing import List, Dict, Tuple, Optional
+from dataclasses import dataclass
+import threading
 
 random.seed(12345)
 
-async def call_api_async(session: aiohttp.ClientSession, instruction: str, inputs: str, semaphore: asyncio.Semaphore) -> str:
+@dataclass
+class ProgressTracker:
+    total: int
+    completed: int = 0
+    _lock: threading.Lock = threading.Lock()
+    
+    def increment(self) -> int:
+        with self._lock:
+            self.completed += 1
+            return self.completed
+
+async def call_api_async(
+    session: aiohttp.ClientSession, 
+    instruction: str, 
+    inputs: str, 
+    semaphore: asyncio.Semaphore,
+    progress: ProgressTracker = None,
+    q_id: str = None
+) -> str:
     async with semaphore:
         start = time.time()
         message_text = [{"role": "user", "content": instruction + inputs}]
@@ -37,7 +57,12 @@ async def call_api_async(session: aiohttp.ClientSession, instruction: str, input
             completion = await response.json()
             result = completion["choices"][0]["message"]["content"]
             
-            print(f"Request completed in {time.time() - start:.2f}s")
+            elapsed = time.time() - start
+            if progress:
+                current = progress.increment()
+                print(f"Request [{current}/{progress.total}] completed in {elapsed:.1f}s{f' (q_id: {q_id})' if q_id else ''}")
+            else:
+                print(f"Request completed in {elapsed:.1f}s")
             return result
 
 
@@ -115,7 +140,8 @@ async def process_single_question(
     single_question: Dict,
     cot_examples_dict: Dict,
     exist_result: List,
-    semaphore: asyncio.Semaphore
+    semaphore: asyncio.Semaphore,
+    progress: ProgressTracker = None
 ) -> Dict:
     q_id = single_question["question_id"]
     
@@ -143,8 +169,7 @@ async def process_single_question(
     input_text = format_example(question, options)
     
     try:
-        print(f'Starting request for question_id = {q_id}')
-        response = await call_api_async(session, prompt, input_text, semaphore)
+        response = await call_api_async(session, prompt, input_text, semaphore, progress, q_id)
         response = response.replace('**', '')
         pred = extract_answer(response)
         return {
@@ -155,7 +180,11 @@ async def process_single_question(
             **single_question
         }
     except Exception as e:
-        print(f"Error processing question {q_id}: {e}")
+        if progress:
+            current = progress.increment()
+            print(f"Request [{current}/{progress.total}] FAILED for question {q_id}: {e}")
+        else:
+            print(f"Error processing question {q_id}: {e}")
         return {
             "question_id": q_id,
             "pred": None,
@@ -176,13 +205,29 @@ async def process_batch(
     results = []
     semaphore = asyncio.Semaphore(max_concurrent)
     
+    # Count only new questions (not already processed)
+    new_questions = []
+    for q in questions:
+        q_id = q["question_id"]
+        already_exists = any(
+            q_id == each["question_id"] and q["question"] == each["question"]
+            for each in exist_result
+        )
+        if not already_exists:
+            new_questions.append(q)
+    
+    progress = ProgressTracker(total=len(new_questions))
+    print(f"\nTotal new questions to process: {len(new_questions)}")
+    print(f"Skipping {len(questions) - len(new_questions)} already processed questions")
+    
     async with aiohttp.ClientSession() as session:
+        # Process all questions (including already processed ones for consistency)
         for i in range(0, len(questions), batch_size):
             batch = questions[i:i + batch_size]
             print(f"\nProcessing batch {i//batch_size + 1}/{(len(questions) + batch_size - 1)//batch_size}")
             
             tasks = [
-                process_single_question(session, q, cot_examples_dict, exist_result, semaphore)
+                process_single_question(session, q, cot_examples_dict, exist_result, semaphore, progress)
                 for q in batch
             ]
             
